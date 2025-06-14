@@ -1,0 +1,92 @@
+<form>
+<label>Nombres:</label><br>
+    <input type="text" name="nombres"><br><br>
+
+    <label>Apellidos:</label><br>
+    <input type="text" name="apellidos"><br><br>
+
+    <label>Año de nacimiento:</label><br>
+    <input type="number" name="anio"><br><br>
+
+    <label>Mes de nacimiento:</label><br>
+    <select name="mes">
+      <option value="">Selecciona un mes</option>
+      <option>Enero</option>
+      <option>Febrero</option>
+      <option>Marzo</option>
+      <option>Abril</option>
+      <option>Mayo</option>
+      <option>Junio</option>
+      <option>Julio</option>
+      <option>Agosto</option>
+      <option>Septiembre</option>
+      <option>Octubre</option>
+      <option>Noviembre</option>
+      <option>Diciembre</option>
+    </select><br><br>
+
+    <button type="button">Guardar</button>
+
+    <form>
+
+ <script>
+    // Crear base de datos
+    let db;
+    const request = indexedDB.open("BaseDeDatos", 1);
+
+    request.onupgradeneeded = function(event) {
+      db = event.target.result;
+      const objectStore = db.createObjectStore("usuarios", { keyPath: "id", autoIncrement: true });
+    };
+
+    request.onsuccess = function(event) {
+      db = event.target.result;
+    };
+
+    function esBisiesto(anio) {
+      return (anio % 4 === 0 && anio % 100 !== 0) || (anio % 400 === 0);
+    }
+
+    function parOImpar(numero) {
+      return numero % 2 === 0 ? "par" : "impar";
+    }
+
+    function guardarDatos() {
+      const nombre = document.getElementById('nombres').value;
+      const apellido = document.getElementById('apellidos').value;
+      const anio = parseInt(document.getElementById('anio').value);
+      const mes = parseInt(document.getElementById('mes').value);
+
+      if (!nombre || !apellido || isNaN(anio) || isNaN(mes)) {
+        alert("Por favor, completa todos los campos.");
+        return;
+      }
+
+      const bisiesto = esBisiesto(anio);
+      const mesParImpar = parOImpar(mes);
+
+      alert("Datos calculados:\n" +
+            "Nombre: " + nombre + "\n" +
+            "Apellido: " + apellido + "\n" +
+            "Año de nacimiento: " + anio + " (" + (bisiesto ? "Bisiesto" : "No bisiesto") + ")\n" +
+            "Mes de nacimiento: " + mes + " (" + mesParImpar + ")");
+
+      // Guardar en IndexedDB
+      const transaccion = db.transaction(["usuarios"], "readwrite");
+      const store = transaccion.objectStore("usuarios");
+
+      const datos = {
+        nombre: nombre,
+        apellido: apellido,
+        anio: anio,
+        mes: mes,
+        esBisiesto: bisiesto,
+        mesParOImpar: mesParImpar
+      };
+
+      store.add(datos);
+    }
+  </script>
+
+</body>
+</html>
